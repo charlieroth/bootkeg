@@ -10,6 +10,7 @@ import (
 
 const (
     EDITOR = "nvim"
+    HOME = "/Users/charlie/github.com/charlieroth/zet"
 )
 
 func NewEntryTitle() string {
@@ -24,7 +25,7 @@ func NewEntryTitle() string {
 }
 
 func NewEntry(title string) error {
-    return os.Mkdir(title, 0755)
+    return os.Mkdir(fmt.Sprintf("%s/%s", HOME, title), 0755)
 }
 
 func NewEntryNote(title string) (string, error) {
