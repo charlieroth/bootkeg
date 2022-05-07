@@ -29,7 +29,7 @@ func NewEntry(title string) error {
 }
 
 func NewEntryNote(title string) (string, error) {
-    path := fmt.Sprintf("%s/README.md", title)
+    path := fmt.Sprintf("%s/%s/README.md", HOME, title)
     if err := os.WriteFile(path, []byte(""), 0755); err != nil {
         return path, err
     }
