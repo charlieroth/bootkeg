@@ -16,12 +16,48 @@ const (
 func NewEntryTitle() string {
 	now := time.Now()
 	year := now.Year()
-	month := int(now.Month())
-	day := now.Day()
-	hour := now.Hour()
-	min := now.Minute()
-	sec := now.Second()
-	return fmt.Sprintf("%d%d%d%d%d%d", year, month, day, hour, min, sec)
+
+    monthInt := int(now.Month())
+    var month string
+    if monthInt < 10 {
+        month = fmt.Sprintf("0%d", monthInt)
+    } else {
+        month = fmt.Sprintf("%d", monthInt)
+    }
+
+    dayInt := now.Day()
+    var day string
+	if dayInt < 10 {
+        day = fmt.Sprintf("0%d", dayInt)
+    } else {
+        day = fmt.Sprintf("%d", dayInt)
+    }
+
+	hourInt := now.Hour()
+    var hour string
+	if hourInt < 10 {
+        hour = fmt.Sprintf("0%d", hourInt)
+    } else {
+        hour = fmt.Sprintf("%d", hourInt)
+    }
+
+	minInt := now.Minute()
+    var min string
+	if minInt < 10 {
+        min = fmt.Sprintf("0%d", minInt)
+    } else {
+        min = fmt.Sprintf("%d", minInt)
+    }
+
+	secInt := now.Second()
+    var sec string
+	if secInt < 10 {
+        sec = fmt.Sprintf("0%d", secInt)
+    } else {
+        sec = fmt.Sprintf("%d", secInt)
+    }
+
+	return fmt.Sprintf("%d%s%s%s%s%s", year, month, day, hour, min, sec)
 }
 
 func NewEntry(title string) error {
