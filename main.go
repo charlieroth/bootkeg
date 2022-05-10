@@ -14,7 +14,7 @@ const (
 )
 
 func NewEntryTitle() string {
-	now := time.Now()
+	now := time.Now().UTC()
 	year := now.Year()
 
     monthInt := int(now.Month())
