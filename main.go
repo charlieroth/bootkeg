@@ -68,7 +68,7 @@ func CreateContainer(isosec, location string) error {
 	return os.Mkdir(fmt.Sprintf("%s/%s", location, isosec), 0755)
 }
 
-func CreateFile(location, isosec string) (string, error) {
+func CreateFile(isosec, location string) (string, error) {
 	path := fmt.Sprintf("%s/%s/README.md", location, isosec)
 	if err := os.WriteFile(path, []byte(""), 0755); err != nil {
 		return path, err
