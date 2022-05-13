@@ -8,14 +8,16 @@ import (
 	"time"
 )
 
-type ZetConfig struct {
+type Config struct {
 	Editor string
-	Home   string
+	ZetDir   string
+	NoteDir   string
+	PostDir   string
 }
 
-var config ZetConfig
+var config Config
 
-func NewEntryTitle() string {
+func CreateIsosec() string {
 	now := time.Now().UTC()
 	year := now.Year()
 
@@ -62,12 +64,12 @@ func NewEntryTitle() string {
 	return fmt.Sprintf("%d%s%s%s%s%s", year, month, day, hour, min, sec)
 }
 
-func NewEntry(title string) error {
-	return os.Mkdir(fmt.Sprintf("%s/%s", config.Home, title), 0755)
+func CreateContainer(isosec, location string) error {
+	return os.Mkdir(fmt.Sprintf("%s/%s", location, isosec), 0755)
 }
 
-func NewEntryNote(title string) (string, error) {
-	path := fmt.Sprintf("%s/%s/README.md", config.Home, title)
+func CreateFile(location, isosec string) (string, error) {
+	path := fmt.Sprintf("%s/%s/README.md", location, isosec)
 	if err := os.WriteFile(path, []byte(""), 0755); err != nil {
 		return path, err
 	}
@@ -75,13 +77,13 @@ func NewEntryNote(title string) (string, error) {
 	return path, nil
 }
 
-func NewZet() error {
-	title := NewEntryTitle()
-	if err := NewEntry(title); err != nil {
+func New(location string) error {
+	isosec := CreateIsosec()
+	if err := CreateContainer(location, isosec); err != nil {
 		return err
 	}
 
-	path, err := NewEntryNote(title)
+	path, err := CreateFile(location, isosec)
 	if err != nil {
 		return err
 	}
@@ -96,26 +98,43 @@ func NewZet() error {
 	return nil
 }
 
-func RunCmd(cmd string) error {
+func NewCmd(contentType string) error {
+	switch contentType {
+	case "zet":
+		return New(config.ZetDir)
+	case "post":
+		return New(config.PostDir)
+	case "note":
+		return New(config.NoteDir)
+	default:
+        // TODO(charlieroth): Replace with Usage()
+		return fmt.Errorf("content type '%s' is not a valid", contentType)
+	}
+}
+
+func Cmd(cmd, contentType string) error {
 	switch cmd {
 	case "new":
-		return NewZet()
+		return NewCmd(contentType)
 	default:
-        // TODO(charlieroth): Replace with ZetUsage()
+        // TODO(charlieroth): Replace with Usage()
 		return fmt.Errorf("command '%s' is not a valid", cmd)
 	}
 }
 
 func main() {
-    config = ZetConfig{
+    config = Config{
         Editor: os.Getenv("EDITOR"),
-        Home: os.Getenv("ZETHOME"),
+        ZetDir: os.Getenv("KEG_ZET"),
+        PostDir: os.Getenv("KEG_POST"),
+        NoteDir: os.Getenv("KEG_NOTE"),
     }
 
 	args := os.Args[1:]
 	cmd := args[0]
+	contentType := args[1]
 
-	if err := RunCmd(cmd); err != nil {
+	if err := Cmd(cmd, contentType); err != nil {
 		log.Fatal(err)
 	}
 }
