@@ -1,3 +1,3 @@
-# zettool
+# bootkeg
 
-A tool to operate a zettelkasten system
+A tool to operate a KEG system
