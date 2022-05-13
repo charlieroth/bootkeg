@@ -64,11 +64,11 @@ func CreateIsosec() string {
 	return fmt.Sprintf("%d%s%s%s%s%s", year, month, day, hour, min, sec)
 }
 
-func CreateContainer(isosec, location string) error {
+func CreateContainer(location, isosec string) error {
 	return os.Mkdir(fmt.Sprintf("%s/%s", location, isosec), 0755)
 }
 
-func CreateFile(isosec, location string) (string, error) {
+func CreateFile(location, isosec string) (string, error) {
 	path := fmt.Sprintf("%s/%s/README.md", location, isosec)
 	if err := os.WriteFile(path, []byte(""), 0755); err != nil {
 		return path, err
