@@ -1,5 +1,5 @@
 all:
-	go build -o bk main.go
+	go build -o bk main.go && mv bk bin
 
 clean:
-	rm bk
+	rm bin/bk

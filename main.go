@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	Editor string
-	ZetDir   string
+	Editor    string
+    RootDir   string
+	ZetDir    string
 	NoteDir   string
 	PostDir   string
 }
@@ -77,7 +78,7 @@ func CreateFile(location, isosec string) (string, error) {
 	return path, nil
 }
 
-func New(location string) error {
+func New(location, contentType string) error {
 	isosec := CreateIsosec()
 	if err := CreateContainer(location, isosec); err != nil {
 		return err
@@ -91,9 +92,41 @@ func New(location string) error {
 	cmd := exec.Command(config.Editor, path)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
-	if err := cmd.Run(); err != nil {
+    if err := cmd.Run(); err != nil {
 		return err
-	}
+    }
+
+    if err := os.Chdir(config.RootDir); err != nil {
+        return err
+    }
+
+    fmt.Print("Commit [y/n]?: ")
+    var shouldCommit string
+    fmt.Scanln(&shouldCommit)
+
+    if shouldCommit == "n" || shouldCommit == "N" {
+        return nil
+    }
+
+    if shouldCommit != "y" && shouldCommit != "Y" {
+        return nil
+    }
+
+    cmd = exec.Command("git", "add", ".")
+    if err := cmd.Run(); err != nil {
+		return err
+    }
+	
+    cmd = exec.Command("git", "commit", "-m", fmt.Sprintf("[new]: %s", isosec))
+    if err := cmd.Run(); err != nil {
+		return err
+    }
+    
+    out, err := exec.Command("git", "push").Output()
+    if err != nil {
+		return err
+    }
+    fmt.Println(string(out))
 
 	return nil
 }
@@ -101,11 +134,11 @@ func New(location string) error {
 func NewCmd(contentType string) error {
 	switch contentType {
 	case "zet":
-		return New(config.ZetDir)
+		return New(config.ZetDir, contentType)
 	case "post":
-		return New(config.PostDir)
+		return New(config.PostDir, contentType)
 	case "note":
-		return New(config.NoteDir)
+		return New(config.NoteDir, contentType)
 	default:
         // TODO(charlieroth): Replace with Usage()
 		return fmt.Errorf("content type '%s' is not a valid", contentType)
@@ -122,12 +155,41 @@ func Cmd(cmd, contentType string) error {
 	}
 }
 
-func main() {
+func LoadConfig() error {
     config = Config{
         Editor: os.Getenv("EDITOR"),
+        RootDir: os.Getenv("KEG_ROOT"),
         ZetDir: os.Getenv("KEG_ZET"),
         PostDir: os.Getenv("KEG_POST"),
         NoteDir: os.Getenv("KEG_NOTE"),
+    }
+
+    if config.Editor == "" {
+        return fmt.Errorf("no EDITOR environment variable set")
+    }
+    
+    if config.RootDir == "" {
+        return fmt.Errorf("no KEG_ROOT environment variable set")
+    }
+    
+    if config.ZetDir == "" {
+        return fmt.Errorf("no KEG_ZET environment variable set")
+    }
+    
+    if config.NoteDir == "" {
+        return fmt.Errorf("no KEG_NOTE environment variable set")
+    }
+    
+    if config.PostDir == "" {
+        return fmt.Errorf("no KEG_POST environment variable set")
+    }
+
+    return nil
+}
+
+func main() {
+    if err := LoadConfig(); err != nil {
+		log.Fatal(err)
     }
 
 	args := os.Args[1:]
